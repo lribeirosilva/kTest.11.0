@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ktest - Playlists Verificadas por Categoria</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .categoria {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-left: 5px solid #3498db;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .categoria h2 {
+            color: #2980b9;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #bdc3c7;
+        }
+        .item {
+            background-color: #ffffff;
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item strong {
+            color: #34495e;
+            font-size: 1.1em;
+        }
+        .item span {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        #loading-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #888;
+            padding: 20px;
+        }
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            font-size: 1.2em;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Ktest - Playlists Verificadas por Categoria</h1>
+        <div id="dadosAgrupados">
+            <p id="loading-message">Carregando dados... ⏳</p>
+        </div>
+    </div>
+
+    <script>
+        // This function is fine as it expects already grouped data
+        function displayGroupedData(groupedData) {
+            const divDadosAgrupados = document.getElementById('dadosAgrupados');
+            divDadosAgrupados.innerHTML = ''; // Clear loading message
+
+            // Iterate through each category in the grouped data
+            for (const categoryName in groupedData) {
+                if (groupedData.hasOwnProperty(categoryName)) {
+                    // Check if the value for the category is an array before calling forEach
+                    if (Array.isArray(groupedData[categoryName])) {
+                        const categoryDiv = document.createElement('div');
+                        categoryDiv.classList.add('categoria');
+                        categoryDiv.style = "text-align:left"
+
+                        const categoryTitle = document.createElement('h2');
+                        categoryTitle.textContent = categoryName;
+
+                        categoryDiv.appendChild(categoryTitle);
+
+                        // Iterate through each item within the current category
+                        groupedData[categoryName].forEach(item => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.classList.add('item');
+                            itemDiv.style.cssText = "algin: left; margin-right: 20px;";
+
+                            const itemImg = document.createElement('img');
+                            itemImg.src = item.tvglogo;
+                            itemImg.alt = item.tvgid;
+                            itemImg.width = 50;
+                            itemImg.height = 50;
+                            itemImg.style.cssText = "align: left; margin-right: -400px;";
+
+                            const itemUrl = document.createElement('a');
+                            itemUrl.href = item.url;
+                            itemUrl.textContent = item.title
+                            itemUrl.style.cssText = "align: left; margin-left: 0px; margin-right: 50px;";
+                            
+                            
+                            //const itemTitle = document.createElement('strong');
+                            //itemTitle.textContent = item.title;
+                            
+
+                            const itemId = document.createElement('span');
+                            itemId.textContent = `ID: ${item.id}`;
+                            //itemId.style.cssText = "float: left; margin-right: -500px;";
+
+                            
+                            
+                            itemDiv.appendChild(itemImg);
+                            itemDiv.appendChild(itemUrl);
+                            //itemDiv.appendChild(itemTitle);
+                            itemDiv.appendChild(itemId);
+
+                            categoryDiv.appendChild(itemDiv);
+                        });
+
+                        divDadosAgrupados.appendChild(categoryDiv);
+                    } else {
+                        console.warn(`Warning: Data for category '${categoryName}' is not an array.`, groupedData[categoryName]);
+                    }
+                }
+            }
+        }
+
+        // --- Logic to Fetch and Process JSON Data ---
+        const jsonFilePath = 'https://raw.githubusercontent.com/lribeirosilva/kTest.11.0/refs/heads/main/ktest.categorys.json'; // Path to your JSON file
+
+        fetch(jsonFilePath)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}. Could not load ${jsonFilePath}.`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Data loaded successfully:", data);
+                // Since your JSON is already grouped, pass it directly to the display function.
+                // NO need for an additional 'agruparDados' function here if data is already grouped.
+                displayGroupedData(data);
+            })
+            .catch(error => {
+                console.error("Error loading or processing JSON:", error);
+                const divDadosAgrupados = document.getElementById('dadosAgrupados');
+                divDadosAgrupados.innerHTML = `<p class="error-message">Ocorreu um erro ao carregar os dados: ${error.message}. Verifique se o arquivo '${jsonFilePath}' existe e o servidor está rodando.</p>`;
+            });
+    </script>
+</body>
+</html>
